@@ -36,6 +36,16 @@ class HashTable {
     return std::abs(pos1.second->x - pos2.second->x);
   }
 
+  ~HashTable() {
+    for (auto current : hash_table_) {
+      while (current != nullptr) {
+        Node* child = current->child;
+        delete current;
+        current = child;
+      }
+    }
+  }
+
  private:
   size_t capacity_{4};
   size_t amount_{0};
