@@ -5,7 +5,9 @@
 
 class HashTable {
  public:
-  enum class OperationType { Put, Get, Delete };
+  enum class OperationType {
+    Put, Get, Delete
+  };
 
   HashTable(size_t capacity = 4) : capacity_(capacity), hash_table_(std::vector<Node*>(capacity, nullptr)) {}
 
@@ -53,6 +55,16 @@ class HashTable {
     delete current;
   }
 
+  ~HashTable() {
+    for (auto current : hash_table_) {
+      while (current != nullptr) {
+        Node* child = current->child;
+        delete current;
+        current = child;
+      }
+    }
+  }
+
  private:
   struct Node {
     std::string key;
@@ -77,7 +89,6 @@ class HashTable {
     }
     return {parent, current};
   }
-
 };
 
 HashTable::OperationType InputToEnum(const std::string& s) {
@@ -113,7 +124,7 @@ void Solve(std::ifstream& in, std::ofstream& out, HashTable& hash_table) {
 }
 
 int main() {
-  std::ifstream in ("map.in");
+  std::ifstream in("map.in");
   std::ofstream out("map.out");
   std::ios_base::sync_with_stdio(false);
   std::cin.tie(nullptr);
