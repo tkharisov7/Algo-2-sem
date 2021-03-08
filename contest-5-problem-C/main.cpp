@@ -7,7 +7,8 @@ bool IsInside(int x, int y, int width, int height) {
 
 class HashTable {
  public:
-  HashTable(size_t capacity = 4) : capacity_(capacity), amount_(0), hash_table_(std::vector<Node*> (capacity, nullptr)) {}
+  HashTable(size_t capacity = 4) : capacity_(capacity), amount_(0),
+                                   hash_table_(std::vector<Node*>(capacity, nullptr)) {}
 
   size_t Amount() const {
     return amount_;
@@ -37,8 +38,18 @@ class HashTable {
     }
   }
 
+  ~HashTable() {
+    for (auto current : hash_table_) {
+      while (current != nullptr) {
+        Node* child = current->child;
+        delete current;
+        current = child;
+      }
+    }
+  }
+
  private:
-  struct Node{
+  struct Node {
     std::pair<int, int> value;
     Node* child{nullptr};
   };
@@ -52,25 +63,24 @@ class HashTable {
   size_t HashFunction(const long arg1, const long arg2) const {//using hash_table polynomial one here
     return static_cast<size_t>((arg1 * PRIME1 + arg2) % PRIME2 % capacity_);
   }
-
 };
 
-  void Solve(HashTable& hash_table, int width, int height, int n) {
-    while (n-- > 0) {
-      int x, y;
-      std::cin >> x >> y;
-      hash_table.Add(x, y, width, height);
-      hash_table.Add(x, y - 1, width, height);
-      hash_table.Add(x, y + 1, width, height);
-      hash_table.Add(x - 1, y, width, height);
-      hash_table.Add(x + 1, y, width, height);
-    }
-    if (static_cast<long long>(hash_table.Amount()) < static_cast<long long>(width) * static_cast<long long>(height)) {
-      std::cout << "No";
-    } else {
-      std::cout << "Yes";
-    }
+void Solve(HashTable& hash_table, int width, int height, int n) {
+  while (n-- > 0) {
+    int x, y;
+    std::cin >> x >> y;
+    hash_table.Add(x, y, width, height);
+    hash_table.Add(x, y - 1, width, height);
+    hash_table.Add(x, y + 1, width, height);
+    hash_table.Add(x - 1, y, width, height);
+    hash_table.Add(x + 1, y, width, height);
   }
+  if (static_cast<long long>(hash_table.Amount()) < static_cast<long long>(width) * static_cast<long long>(height)) {
+    std::cout << "No";
+  } else {
+    std::cout << "Yes";
+  }
+}
 
 int main() {
   std::ios_base::sync_with_stdio(false);
