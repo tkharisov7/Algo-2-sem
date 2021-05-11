@@ -8,7 +8,6 @@
 #include <iostream>
 #include <memory>
 #include <vector>
-#include <list>
 
 template<size_t chunkSize>
 class FixedAllocator {
@@ -18,6 +17,11 @@ class FixedAllocator {
   }
 
   void* allocate() {
+    if (free_ != nullptr) {
+      Block* cur = free_;
+      free_ = free_->next;
+      return static_cast<void*>(cur);
+    }
     if (size_ == index_) {
       Resize();
       index_ = 0;
@@ -26,17 +30,28 @@ class FixedAllocator {
     return static_cast<void*>(pools_.back()->data + (index_ - 1) * chunkSize);
   }
 
-  void deallocate() {}
+  void deallocate(void* ptr, size_t n) {
+    Block* current = static_cast<Block*>(ptr);
+    current->next = free_;
+    free_ = current;
+  }
 
   ~FixedAllocator() {
     for (auto pointer : pools_) {
       delete pointer;
+    }
+    Block* cur = free_;
+    while (cur != nullptr) {
+      Block* d = cur;
+      cur = cur->next;
+      delete d;
     }
   }
  private:
   struct Block {
     int8_t* data;
     size_t sz{1};
+    Block* next{nullptr};
     Block(const size_t n) {
       data = static_cast<int8_t*>(::operator new(chunkSize * n));
       sz = n;
@@ -46,7 +61,9 @@ class FixedAllocator {
     }
   };
 
+
   std::vector<Block*> pools_;
+  Block* free_{nullptr};
   const size_t max_size_ = 1'000'000;
   size_t index_{0};
   size_t size_{1};
