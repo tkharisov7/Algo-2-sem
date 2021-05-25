@@ -443,7 +443,6 @@ class UnorderedMap {
 
   class Iterator : public List<NodeType>::iterator {
    public:
-    friend class UnorderedMap;
     Iterator(const typename List<NodeType>::iterator& it) : List<NodeType>::iterator(it) {}
   };
 
@@ -455,17 +454,15 @@ class UnorderedMap {
   };
  public:
 
-  friend int main();
-
   //default constructor
   UnorderedMap() {
-    heads_ = std::vector<Iterator>(10, end());
+    heads_ = std::vector<Iterator>(default_bucket_size_, end());
   }
 
   //copy constructor
   UnorderedMap(const UnorderedMap& arg)
       : max_load_factor_(arg.max_load_factor_) {
-    heads_ = std::vector<Iterator>(10, end());
+    heads_ = std::vector<Iterator>(default_bucket_size_, end());
     for (auto it = arg.begin(); it != arg.end(); ++it) {
       insert(*it);
     }
@@ -646,8 +643,13 @@ class UnorderedMap {
     }
   }
 
-  size_t size() {
+  size_t size() const {
     return size_;
+  }
+
+  size_t max_size() const {
+    std::vector<NodeType> temporary;
+    return temporary.max_size();
   }
 
   //Destructor
@@ -659,6 +661,7 @@ class UnorderedMap {
   size_t size_{0};
   float max_load_factor_{0.95};
   Alloc allocator_;
+  size_t default_bucket_size_{10};
 
   //Makes a rehash of current hash-table
   void rehash(size_t arg_size) {
